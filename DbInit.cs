@@ -45,11 +45,11 @@ public static class DbInit
         );
 
 
-        CREATE TABLE IF NOT EXISTS pizzatopping (
+        CREATE TABLE IF NOT EXISTS pizzatoppings (
             pizzaid INTEGER NOT NULL,
             toppingid INTEGER NOT NULL,
             PRIMARY KEY (pizzaid, toppingid),
-            FOREIGN KEY (pizzaid) REFERENCES pizza (id),
+            FOREIGN KEY (pizzaid) REFERENCES pizzas (id),
             FOREIGN KEY (toppingid) REFERENCES toppings (id)
         );
         ";
@@ -71,7 +71,32 @@ public static class DbInit
         (6, 'Paprika', 10.00),
         (7, 'Kaviar', 100.00),
         (8, 'Safran', 500.00);
-          ";
+
+        INSERT OR IGNORE INTO customers (id, name, email, phone) VALUES
+        (1, 'John Doe', 'john@email.com', '555-1234'),
+        (2, 'Jane Smith', 'jane@email.com', '555-5678'),
+        (3, 'Bob Wilson', 'bob@email.com', '555-9999');
+
+        INSERT OR IGNORE INTO orders (id, customerid, date, total) VALUES
+        (1, 1, '2025-01-15', 250.00),
+        (2, 2, '2025-01-20', 310.00),
+        (3, 1, '2025-01-28', 150.00);
+
+        INSERT OR IGNORE INTO pizzas (id, orderid, sizeid) VALUES
+        (1, 1, 2),
+        (2, 1, 1),
+        (3, 2, 3),
+        (4, 3, 2);
+
+        INSERT OR IGNORE INTO pizzatoppings (pizzaid, toppingid) VALUES
+        (1, 1),
+        (1, 4),
+        (2, 2),
+        (3, 1),
+        (3, 2),
+        (3, 5),
+        (4, 1);
+        ";
 
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
