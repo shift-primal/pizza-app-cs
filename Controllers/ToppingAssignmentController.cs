@@ -4,12 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 [Route("pizzas/{pizzaId}/toppings")]
 public class ToppingAssignmentController(PizzasRepository repo) : ControllerBase
 {
-    [HttpGet]
-    public async Task<ActionResult<List<Topping>>> GetToppings(int pizzaId)
-    {
-        return await repo.GetToppings(pizzaId);
-    }
-
     [HttpPost("{toppingId}")]
     public async Task<ActionResult> AddTopping(int pizzaId, int toppingId)
     {
