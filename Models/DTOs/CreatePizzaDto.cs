@@ -1,1 +1,3 @@
-public record CreatePizzaDto(int OrderId, int SizeId, List<int>? ToppingIds);
+using System.ComponentModel.DataAnnotations;
+
+public record CreatePizzaDto([Required] int OrderId, [Required] int SizeId, List<int>? ToppingIds);

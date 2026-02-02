@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 public record CreateOrderDto(
-    int CustomerId,
-    DateTime Date,
-    decimal Total,
+    [Required] int CustomerId,
+    [Required] DateTime Date,
+    [Required, Range(0.01, double.MaxValue)] decimal Total,
     List<CreateOrderPizzaDto>? Pizzas
 );

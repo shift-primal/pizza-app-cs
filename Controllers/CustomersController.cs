@@ -20,7 +20,7 @@ public class CustomersController(CustomersRepository repo) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(CreateCustomerDto dto)
+    public async Task<ActionResult> Create(SaveCustomerDto dto)
     {
         Customer customer = new()
         {
@@ -35,7 +35,7 @@ public class CustomersController(CustomersRepository repo) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, UpdateCustomerDto dto)
+    public async Task<ActionResult> Update(int id, SaveCustomerDto dto)
     {
         Customer customer = new()
         {
