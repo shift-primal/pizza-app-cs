@@ -20,10 +20,17 @@ public class PizzasController(PizzasRepository repo) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(Pizza pizza)
+    public async Task<ActionResult> Create(CreatePizzaDto dto)
     {
-        await repo.Create(pizza);
-        return Created();
+        Pizza pizza = new() { OrderId = dto.OrderId, SizeId = dto.SizeId };
+
+        var newId = await repo.Create(pizza);
+
+        if (dto.ToppingIds != null)
+            foreach (var tid in dto.ToppingIds)
+                await repo.AddTopping(newId, tid);
+
+        return Created($"/pizzas/{newId}", await repo.GetById(newId));
     }
 
     [HttpPut("{id}")]

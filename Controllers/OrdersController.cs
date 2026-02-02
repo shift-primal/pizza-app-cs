@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
-public class OrdersController(OrdersRepository repo) : ControllerBase
+public class OrdersController(OrdersRepository repo, PizzasRepository pizzasRepo) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<Order>>> GetAll()
@@ -20,10 +20,30 @@ public class OrdersController(OrdersRepository repo) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(Order order)
+    public async Task<ActionResult> Create(CreateOrderDto dto)
     {
-        await repo.Create(order);
-        return Created();
+        Order order = new()
+        {
+            CustomerId = dto.CustomerId,
+            Date = dto.Date,
+            Total = dto.Total,
+        };
+
+        var newId = await repo.Create(order);
+
+        if (dto.Pizzas != null)
+            foreach (var pizzaDto in dto.Pizzas)
+            {
+                Pizza pizza = new() { OrderId = newId, SizeId = pizzaDto.SizeId };
+
+                var pizzaId = await pizzasRepo.Create(pizza);
+
+                if (pizzaDto.ToppingIds != null)
+                    foreach (var tid in pizzaDto.ToppingIds)
+                        await pizzasRepo.AddTopping(pizzaId, tid);
+            }
+
+        return Created($"/orders/{newId}", await repo.GetById(newId));
     }
 
     [HttpPut("{id}")]

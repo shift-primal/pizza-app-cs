@@ -1,5 +1,6 @@
-public class CreateOrderDto
-{
-    public int CustomerId { get; set; }
-    // liste med pizzas
-}
+public record CreateOrderDto(
+    int CustomerId,
+    DateTime Date,
+    decimal Total,
+    List<CreateOrderPizzaDto>? Pizzas
+);

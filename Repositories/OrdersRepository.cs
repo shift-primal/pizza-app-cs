@@ -11,21 +11,7 @@ public class OrdersRepository(string connectionString)
 
         List<Order> orders = [.. await conn.QueryAsync<Order>("SELECT * FROM orders")];
 
-        if (orders.Count == 0)
-            return orders;
-
-        var orderIds = orders.Select(o => o.Id).ToList();
-
-        List<Pizza> pizzas =
-        [
-            .. await conn.QueryAsync<Pizza>(
-                "SELECT * FROM pizzas WHERE orderid IN @OrderIds",
-                new { OrderIds = orderIds }
-            ),
-        ];
-
-        foreach (var order in orders)
-            order.Pizzas = [.. pizzas.Where(p => p.OrderId == order.Id)];
+        await OrderLoader.LoadPizzas(conn, orders);
 
         return orders;
     }
@@ -39,30 +25,20 @@ public class OrdersRepository(string connectionString)
             new { Id = id }
         );
 
-        if (order != null)
-        {
-            List<Pizza> pizzas =
-            [
-                .. await conn.QueryAsync<Pizza>(
-                    "SELECT * FROM pizzas WHERE orderid = @OrderId",
-                    new { OrderId = order.Id }
-                ),
-            ];
+        if (order == null)
+            return null;
 
-            order.Pizzas = pizzas;
+        await OrderLoader.LoadPizzas(conn, order);
 
-            return order;
-        }
-
-        return null;
+        return order;
     }
 
-    public async Task Create(Order order)
+    public async Task<int> Create(Order order)
     {
         using var conn = new SqliteConnection(_connectionString);
-
-        await conn.ExecuteAsync(
-            @"INSERT INTO orders (customerid, date, total) VALUES (@CustomerId, @Date, @Total)",
+        return await conn.ExecuteScalarAsync<int>(
+            @"INSERT INTO orders (customerid, date, total) VALUES (@CustomerId, @Date, @Total);
+            SELECT last_insert_rowid();",
             order
         );
     }

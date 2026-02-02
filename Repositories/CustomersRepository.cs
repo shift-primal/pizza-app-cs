@@ -24,6 +24,8 @@ public class CustomersRepository(string connectionString)
             ),
         ];
 
+        await OrderLoader.LoadPizzas(conn, orders);
+
         foreach (var customer in customers)
             customer.Orders = [.. orders.Where(o => o.CustomerId == customer.Id)];
 
@@ -39,29 +41,29 @@ public class CustomersRepository(string connectionString)
             new { Id = id }
         );
 
-        if (customer != null)
-        {
-            List<Order> orders =
-            [
-                .. await conn.QueryAsync<Order>(
-                    "SELECT * FROM orders WHERE customerid = @CustomerId",
-                    new { CustomerId = customer.Id }
-                ),
-            ];
+        if (customer == null)
+            return null;
 
-            customer.Orders = orders;
+        List<Order> orders =
+        [
+            .. await conn.QueryAsync<Order>(
+                "SELECT * FROM orders WHERE customerid = @CustomerId",
+                new { CustomerId = customer.Id }
+            ),
+        ];
 
-            return customer;
-        }
+        await OrderLoader.LoadPizzas(conn, orders);
+        customer.Orders = orders;
 
-        return null;
+        return customer;
     }
 
-    public async Task Create(Customer customer)
+    public async Task<int> Create(Customer customer)
     {
         using var conn = new SqliteConnection(_connectionString);
-        await conn.ExecuteAsync(
-            @"INSERT INTO customers (name, email, phone) VALUES (@Name, @Email, @Phone)",
+        return await conn.ExecuteScalarAsync<int>(
+            @"INSERT INTO customers (name, email, phone) VALUES (@Name, @Email, @Phone);
+            SELECT last_insert_rowid();",
             customer
         );
     }

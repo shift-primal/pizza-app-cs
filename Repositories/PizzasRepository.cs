@@ -11,40 +11,7 @@ public class PizzasRepository(string connectionString)
 
         List<Pizza> pizzas = [.. await conn.QueryAsync<Pizza>("SELECT * FROM pizzas")];
 
-        if (pizzas.Count == 0)
-            return pizzas;
-
-        var sizeIds = pizzas.Select(p => p.SizeId).Distinct().ToList();
-
-        var sizes = await conn.QueryAsync<Size>(
-            "SELECT * FROM sizes WHERE id IN @SizeIds",
-            new { SizeIds = sizeIds }
-        );
-
-        var pizzaIds = pizzas.Select(p => p.Id).ToList();
-
-        var pizzaToppings = await conn.QueryAsync<PizzaTopping>(
-            "SELECT * FROM pizzatoppings WHERE pizzaid IN @PizzaIds",
-            new { PizzaIds = pizzaIds }
-        );
-
-        var toppingIds = pizzaToppings.Select(pt => pt.ToppingId).Distinct().ToList();
-
-        var toppings = await conn.QueryAsync<Topping>(
-            "SELECT * FROM toppings WHERE id IN @ToppingIds",
-            new { ToppingIds = toppingIds }
-        );
-
-        foreach (var pizza in pizzas)
-        {
-            pizza.Size = sizes.FirstOrDefault(s => s.Id == pizza.SizeId);
-
-            var toppingIdsForPizza = pizzaToppings
-                .Where(pt => pt.PizzaId == pizza.Id)
-                .Select(pt => pt.ToppingId);
-
-            pizza.Toppings = [.. toppings.Where(t => toppingIdsForPizza.Contains(t.Id))];
-        }
+        await PizzaLoader.LoadDetails(conn, pizzas);
 
         return pizzas;
     }
@@ -58,36 +25,20 @@ public class PizzasRepository(string connectionString)
             new { Id = id }
         );
 
-        if (pizza != null)
-        {
-            var size = await conn.QuerySingleOrDefaultAsync<Size>(
-                "SELECT * FROM sizes WHERE id = @SizeId",
-                new { pizza.SizeId }
-            );
-            pizza.Size = size;
+        if (pizza == null)
+            return null;
 
-            List<Topping> toppings =
-            [
-                .. await conn.QueryAsync<Topping>(
-                    @"SELECT t.* FROM toppings t
-            INNER JOIN pizzatoppings pt ON t.id = pt.toppingId
-            WHERE pt.pizzaid = @Id",
-                    new { Id = id }
-                ),
-            ];
-            pizza.Toppings = toppings;
+        await PizzaLoader.LoadDetails(conn, pizza);
 
-            return pizza;
-        }
-
-        return null;
+        return pizza;
     }
 
-    public async Task Create(Pizza pizza)
+    public async Task<int> Create(Pizza pizza)
     {
         using var conn = new SqliteConnection(_connectionString);
-        await conn.ExecuteAsync(
-            @"INSERT INTO pizzas (orderid, sizeid) VALUES (@OrderId, @SizeId)",
+        return await conn.ExecuteScalarAsync<int>(
+            @"INSERT INTO pizzas (orderid, sizeid) VALUES (@OrderId, @SizeId);
+            SELECT last_insert_rowid();",
             pizza
         );
     }

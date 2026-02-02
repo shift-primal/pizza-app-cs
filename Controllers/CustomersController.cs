@@ -20,10 +20,18 @@ public class CustomersController(CustomersRepository repo) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(Customer customer)
+    public async Task<ActionResult> Create(CreateCustomerDto dto)
     {
-        await repo.Create(customer);
-        return Created();
+        Customer customer = new()
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            Phone = dto.Phone,
+        };
+
+        var newId = await repo.Create(customer);
+
+        return Created($"/customers/{newId}", await repo.GetById(newId));
     }
 
     [HttpPut("{id}")]
