@@ -77,7 +77,7 @@ public class CustomersRepository(string connectionString)
         );
     }
 
-    public async Task Delete(int id)
+    public async Task<bool> Delete(int id)
     {
         using var conn = new SqliteConnection(_connectionString);
 
@@ -86,36 +86,38 @@ public class CustomersRepository(string connectionString)
             new { Id = id }
         );
 
-        if (customer != null)
-        {
-            var orders = await conn.QueryAsync<Order>(
-                "SELECT * FROM orders WHERE customerid = @CustomerId",
-                new { CustomerId = customer.Id }
-            );
+        if (customer == null)
+            return false;
 
-            var orderIds = orders.Select(o => o.Id).ToList();
+        var orders = await conn.QueryAsync<Order>(
+            "SELECT * FROM orders WHERE customerid = @CustomerId",
+            new { CustomerId = customer.Id }
+        );
 
-            var pizzas = await conn.QueryAsync<Pizza>(
-                "SELECT * FROM pizzas WHERE orderid IN @OrderIds",
-                new { OrderIds = orderIds }
-            );
+        var orderIds = orders.Select(o => o.Id).ToList();
 
-            var pizzaIds = pizzas.Select(p => p.Id).ToList();
+        var pizzas = await conn.QueryAsync<Pizza>(
+            "SELECT * FROM pizzas WHERE orderid IN @OrderIds",
+            new { OrderIds = orderIds }
+        );
 
-            await conn.ExecuteAsync(
-                @"
+        var pizzaIds = pizzas.Select(p => p.Id).ToList();
+
+        await conn.ExecuteAsync(
+            @"
                 DELETE FROM pizzatoppings WHERE pizzaid IN @PizzaIds;
                 DELETE FROM pizzas WHERE orderid IN @OrderIds;
                 DELETE FROM orders WHERE customerid = @CustomerId;
                 DELETE FROM customers WHERE Id = @CustomerId;
                 ",
-                new
-                {
-                    PizzaIds = pizzaIds,
-                    OrderIds = orderIds,
-                    CustomerId = customer.Id,
-                }
-            );
-        }
+            new
+            {
+                PizzaIds = pizzaIds,
+                OrderIds = orderIds,
+                CustomerId = customer.Id,
+            }
+        );
+
+        return true;
     }
 }

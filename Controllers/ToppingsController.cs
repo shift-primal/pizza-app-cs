@@ -37,7 +37,8 @@ public class ToppingsController(ToppingsRepository repo) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        await repo.Delete(id);
+        if (!await repo.Delete(id))
+            return NotFound();
         return Ok();
     }
 }

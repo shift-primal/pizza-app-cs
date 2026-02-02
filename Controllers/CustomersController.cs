@@ -35,9 +35,16 @@ public class CustomersController(CustomersRepository repo) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, Customer customer)
+    public async Task<ActionResult> Update(int id, UpdateCustomerDto dto)
     {
-        customer.Id = id;
+        Customer customer = new()
+        {
+            Id = id,
+            Name = dto.Name,
+            Email = dto.Email,
+            Phone = dto.Phone,
+        };
+
         await repo.Update(customer);
         return Ok();
     }
@@ -45,7 +52,8 @@ public class CustomersController(CustomersRepository repo) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        await repo.Delete(id);
+        if (!await repo.Delete(id))
+            return NotFound();
         return Ok();
     }
 }

@@ -47,9 +47,16 @@ public class OrdersController(OrdersRepository repo, PizzasRepository pizzasRepo
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, Order order)
+    public async Task<ActionResult> Update(int id, UpdateOrderDto dto)
     {
-        order.Id = id;
+        Order order = new()
+        {
+            Id = id,
+            CustomerId = dto.CustomerId,
+            Date = dto.Date,
+            Total = dto.Total,
+        };
+
         await repo.Update(order);
         return Ok();
     }
@@ -57,7 +64,8 @@ public class OrdersController(OrdersRepository repo, PizzasRepository pizzasRepo
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        await repo.Delete(id);
+        if (!await repo.Delete(id))
+            return NotFound();
         return Ok();
     }
 }

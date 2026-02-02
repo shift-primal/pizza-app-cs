@@ -34,9 +34,15 @@ public class PizzasController(PizzasRepository repo) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, Pizza pizza)
+    public async Task<ActionResult> Update(int id, UpdatePizzaDto dto)
     {
-        pizza.Id = id;
+        Pizza pizza = new()
+        {
+            Id = id,
+            OrderId = dto.OrderId,
+            SizeId = dto.SizeId,
+        };
+
         await repo.Update(pizza);
         return Ok();
     }
@@ -44,7 +50,8 @@ public class PizzasController(PizzasRepository repo) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        await repo.Delete(id);
+        if (!await repo.Delete(id))
+            return NotFound();
         return Ok();
     }
 }

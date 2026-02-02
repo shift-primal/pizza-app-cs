@@ -38,9 +38,20 @@ public class ToppingsRepository(string connectionString)
         );
     }
 
-    public async Task Delete(int id)
+    public async Task<bool> Delete(int id)
     {
         using var conn = new SqliteConnection(_connectionString);
+
+        var topping = await conn.QuerySingleOrDefaultAsync<Topping>(
+            "SELECT * FROM toppings WHERE id = @Id",
+            new { Id = id }
+        );
+
+        if (topping == null)
+            return false;
+
         await conn.ExecuteAsync("DELETE FROM toppings WHERE id = @Id", new { Id = id });
+
+        return true;
     }
 }

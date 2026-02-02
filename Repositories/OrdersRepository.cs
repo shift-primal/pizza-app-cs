@@ -52,9 +52,17 @@ public class OrdersRepository(string connectionString)
         );
     }
 
-    public async Task Delete(int id)
+    public async Task<bool> Delete(int id)
     {
         using var conn = new SqliteConnection(_connectionString);
+
+        var order = await conn.QuerySingleOrDefaultAsync<Order>(
+            "SELECT * FROM orders WHERE id = @Id",
+            new { Id = id }
+        );
+
+        if (order == null)
+            return false;
 
         var pizzas = await conn.QueryAsync<Pizza>(
             "SELECT * FROM pizzas WHERE orderid = @Id",
@@ -71,5 +79,7 @@ public class OrdersRepository(string connectionString)
                 ",
             new { PizzaIds = pizzaIds, Id = id }
         );
+
+        return true;
     }
 }

@@ -38,9 +38,20 @@ public class SizesRepository(string connectionString)
         );
     }
 
-    public async Task Delete(int id)
+    public async Task<bool> Delete(int id)
     {
         using var conn = new SqliteConnection(_connectionString);
+
+        var size = await conn.QuerySingleOrDefaultAsync<Size>(
+            "SELECT * FROM sizes WHERE id = @Id",
+            new { Id = id }
+        );
+
+        if (size == null)
+            return false;
+
         await conn.ExecuteAsync("DELETE FROM sizes WHERE id = @Id", new { Id = id });
+
+        return true;
     }
 }

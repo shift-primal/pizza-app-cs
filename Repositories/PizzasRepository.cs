@@ -52,9 +52,17 @@ public class PizzasRepository(string connectionString)
         );
     }
 
-    public async Task Delete(int id)
+    public async Task<bool> Delete(int id)
     {
         using var conn = new SqliteConnection(_connectionString);
+
+        var pizza = await conn.QuerySingleOrDefaultAsync<Pizza>(
+            "SELECT * FROM pizzas WHERE id = @Id",
+            new { Id = id }
+        );
+
+        if (pizza == null)
+            return false;
 
         await conn.ExecuteAsync(
             @"
@@ -62,6 +70,8 @@ public class PizzasRepository(string connectionString)
             DELETE FROM pizzas WHERE id = @Id",
             new { Id = id }
         );
+
+        return true;
     }
 
     // Toppings
