@@ -1,9 +1,7 @@
 ﻿public static class Program
 {
-    public static void Main()
+    public static async Task Main()
     {
-        App _app = new();
-
-        _app.Run();
+        await new App().Run();
     }
 }

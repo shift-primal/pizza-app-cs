@@ -1,7 +1,11 @@
 public class App()
 {
-    public void Run()
+    public async Task Run()
     {
         Console.WriteLine("App starting...");
+
+        PizzaService ps = new();
+
+        List<Pizza> pizzas = await ps.GetAll();
     }
 }
