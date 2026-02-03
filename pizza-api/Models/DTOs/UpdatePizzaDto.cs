@@ -1,3 +1,3 @@
 using System.ComponentModel.DataAnnotations;
 
-public record UpdatePizzaDto([Required] int OrderId, [Required] int SizeId);
+public record UpdatePizzaDto([Required] int OrderId, [Required] int SizeId, [Required] int DoughId);

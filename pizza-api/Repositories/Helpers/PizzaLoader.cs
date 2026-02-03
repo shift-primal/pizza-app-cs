@@ -15,10 +15,16 @@ public static class PizzaLoader
 
         var pizzaIds = pizzas.Select(p => p.Id).ToList();
         var sizeIds = pizzas.Select(p => p.SizeId).Distinct().ToList();
+        var doughIds = pizzas.Select(p => p.DoughId).Distinct().ToList();
 
         var sizes = await conn.QueryAsync<Size>(
             "SELECT * FROM sizes WHERE id IN @SizeIds",
             new { SizeIds = sizeIds }
+        );
+
+        var doughs = await conn.QueryAsync<Dough>(
+            "SELECT * FROM doughs WHERE id IN @DoughIds",
+            new { DoughIds = doughIds }
         );
 
         var pizzaToppings = await conn.QueryAsync<PizzaTopping>(
@@ -39,6 +45,8 @@ public static class PizzaLoader
         foreach (var pizza in pizzas)
         {
             pizza.Size = sizes.FirstOrDefault(s => s.Id == pizza.SizeId);
+            pizza.Dough = doughs.FirstOrDefault(d => d.Id == pizza.DoughId);
+
             var toppingIdsForPizza = pizzaToppings
                 .Where(pt => pt.PizzaId == pizza.Id)
                 .Select(pt => pt.ToppingId);

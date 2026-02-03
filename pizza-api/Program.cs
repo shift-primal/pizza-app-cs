@@ -11,6 +11,7 @@ public class Program
         builder.Services.AddScoped(_ => new OrdersRepository(connectionString));
         builder.Services.AddScoped(_ => new ToppingsRepository(connectionString));
         builder.Services.AddScoped(_ => new PizzasRepository(connectionString));
+        builder.Services.AddScoped(_ => new DoughsRepository(connectionString));
 
         builder.Services.AddControllers();
 

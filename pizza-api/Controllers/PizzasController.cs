@@ -6,7 +6,8 @@ public class PizzasController(
     PizzasRepository repo,
     OrdersRepository ordersRepo,
     SizesRepository sizesRepo,
-    ToppingsRepository toppingsRepo
+    ToppingsRepository toppingsRepo,
+    DoughsRepository doughsRepo
 ) : ControllerBase
 {
     [HttpGet]
@@ -31,13 +32,20 @@ public class PizzasController(
             return BadRequest($"Order with ID: ({dto.OrderId}) not found");
         if (await sizesRepo.GetById(dto.SizeId) == null)
             return BadRequest($"Size with ID: ({dto.SizeId}) not found");
+        if (await doughsRepo.GetById(dto.DoughId) == null)
+            return BadRequest($"Dough with ID: ({dto.DoughId}) not found");
 
         if (dto.ToppingIds != null)
             foreach (var tid in dto.ToppingIds)
                 if (await toppingsRepo.GetById(tid) == null)
                     return BadRequest($"Topping with ID: ({tid}) not found");
 
-        Pizza pizza = new() { OrderId = dto.OrderId, SizeId = dto.SizeId };
+        Pizza pizza = new()
+        {
+            OrderId = dto.OrderId,
+            SizeId = dto.SizeId,
+            DoughId = dto.DoughId,
+        };
 
         var newId = await repo.Create(pizza);
 
@@ -55,12 +63,15 @@ public class PizzasController(
             return BadRequest($"Order with ID: ({dto.OrderId}) not found");
         if (await sizesRepo.GetById(dto.SizeId) == null)
             return BadRequest($"Size with ID: ({dto.SizeId}) not found");
+        if (await doughsRepo.GetById(dto.DoughId) == null)
+            return BadRequest($"Dough with ID: ({dto.DoughId}) not found");
 
         Pizza pizza = new()
         {
             Id = id,
             OrderId = dto.OrderId,
             SizeId = dto.SizeId,
+            DoughId = dto.DoughId,
         };
 
         await repo.Update(pizza);

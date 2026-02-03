@@ -37,7 +37,7 @@ public class PizzasRepository(string connectionString)
     {
         using var conn = new SqliteConnection(_connectionString);
         return await conn.ExecuteScalarAsync<int>(
-            @"INSERT INTO pizzas (orderid, sizeid) VALUES (@OrderId, @SizeId);
+            @"INSERT INTO pizzas (orderid, sizeid, doughid) VALUES (@OrderId, @SizeId, @DoughId);
             SELECT last_insert_rowid();",
             pizza
         );
@@ -47,7 +47,7 @@ public class PizzasRepository(string connectionString)
     {
         using var conn = new SqliteConnection(_connectionString);
         await conn.ExecuteAsync(
-            "UPDATE pizzas SET orderid = @OrderId, sizeid = @SizeId WHERE id = @Id",
+            "UPDATE pizzas SET orderid = @OrderId, sizeid = @SizeId, doughid = @DoughId WHERE id = @Id",
             pizza
         );
     }

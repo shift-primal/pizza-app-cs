@@ -15,6 +15,13 @@ public static class DbInit
             phone TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS doughs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            glutenfree INTEGER NOT NULL DEFAULT 0 CHECK (glutenfree IN (0, 1)),
+            price REAL NOT NULL
+        );
+
         CREATE TABLE IF NOT EXISTS sizes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -40,8 +47,10 @@ public static class DbInit
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             orderid INTEGER NOT NULL,
             sizeid INTEGER NOT NULL,
+            doughid INTEGER NOT NULL,
             FOREIGN KEY (orderid) REFERENCES orders (id),
-            FOREIGN KEY (sizeid) REFERENCES sizes (id)
+            FOREIGN KEY (sizeid) REFERENCES sizes (id),
+            FOREIGN KEY (doughid) REFERENCES doughs (id)
         );
 
 
@@ -61,6 +70,13 @@ public static class DbInit
         (1, 'Liten', 24, 80.00),
         (2, 'Medium', 33, 120.00),
         (3, 'Stor', 40, 180.00);
+
+        INSERT OR IGNORE INTO doughs (id, name, glutenfree, price) VALUES
+        (1, 'Klassisk', 0, 0.00),
+        (2, 'Italiensk', 0, 10.00),
+        (3, 'Amerikansk', 0, 15.00),
+        (4, 'Fullkorn', 0, 20.00),
+        (5, 'Blomkål', 1, 35.00);
 
         INSERT OR IGNORE INTO toppings (id, name, price) VALUES
         (1, 'Pepperoni', 20.00),
@@ -82,11 +98,11 @@ public static class DbInit
         (2, 2, '2025-01-20', 310.00),
         (3, 1, '2025-01-28', 150.00);
 
-        INSERT OR IGNORE INTO pizzas (id, orderid, sizeid) VALUES
-        (1, 1, 2),
-        (2, 1, 1),
-        (3, 2, 3),
-        (4, 3, 2);
+        INSERT OR IGNORE INTO pizzas (id, orderid, sizeid, doughid) VALUES
+        (1, 1, 2, 1),
+        (2, 1, 1, 2),
+        (3, 2, 3, 3),
+        (4, 3, 2, 5);
 
         INSERT OR IGNORE INTO pizzatoppings (pizzaid, toppingid) VALUES
         (1, 1),
